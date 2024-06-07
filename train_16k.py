@@ -8,6 +8,10 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, BatchNormalization
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.models import load_model
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+from collections import Counter
+from sklearn.metrics import classification_report
 
 def print_M(conf_M, class_names):
     s = "activity," + ",".join(class_names)
@@ -71,7 +75,10 @@ if __name__ == "__main__":
     # if os.path.exists(model_weight_out):
     #     sys.exit(f"The same file name exists already: {model_weight_out}")
 
-    # Loading the datasets
+    ############### Loading the datasets #####################
+
+    print('\nLoading the data\n')
+
     featuresPath = "features_16k/"
 
     class_names = np.load(os.path.join(featuresPath, 'class_names.npy'))
@@ -87,7 +94,29 @@ if __name__ == "__main__":
 
     num_labels = y_train.shape[1]
 
-    # Training the model
+    ################# Balancing the data ###############################
+    print("\nBalancing the data\n")
+
+    print("Train Class distribution before balancing:", Counter(np.argmax(y_train, axis=1)))
+
+    # Upsampling using SMOTE
+    smote = SMOTE(sampling_strategy={1: 6000, 2: 6000})
+    oversampled_features, oversampled_labels = smote.fit_resample(X_train, y_train)
+
+    # Downsampling using RandomUnderSampler
+    undersampler = RandomUnderSampler(sampling_strategy={0: 5000})
+    undersampled_features, undersampled_labels = undersampler.fit_resample(
+        oversampled_features, oversampled_labels)
+
+    print("Train Class distribution after balancing:", Counter(
+        np.argmax(undersampled_labels, axis=1)))
+
+    X_train = undersampled_features
+    y_train = undersampled_labels
+
+    ###################### Training the model ###########################3
+    print("\nTraining the model\n")
+
     model = build_improved_model(X_train.shape[1], num_labels)
     model.summary()
 
@@ -102,7 +131,9 @@ if __name__ == "__main__":
     model.fit(X_train, y_train, batch_size=32, epochs=10,
               validation_data=(X_val, y_val), callbacks=[callback])
 
-    # Testing the model
+    ################# Testing the model #############################
+    print("\nTesting the model\n")
+
     result = model.predict(X_test)
 
     cnt, cnt_alarm, cnt_other, cnt_water = 0, 0, 0, 0
@@ -131,14 +162,21 @@ if __name__ == "__main__":
 
     showResult(result, y_test, class_names)
 
-    if not os.path.exists("Models"):
-        os.makedirs("Models")
-    path = os.path.join("Models", f"audio_NN_New{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}_acc_{acc}")
-    model_json = model.to_json()
-    with open(f"{path}.json", "w") as json_file:
-        json_file.write(model_json)
-    model.save_weights(f"{path}.weights.h5")
+    print("\n")
+    print(classification_report(
+        np.argmax(y_test, axis=1),
+        np.argmax(result, axis=1),
+        target_names=list(class_names)
+    ))
 
-    if not os.path.exists("weights"):
-        os.makedirs("weights")
-    model.save(model_weight_out, overwrite=True, include_optimizer=False)
+    # # if not os.path.exists("Models"):
+    # #     os.makedirs("Models")
+    # # path = os.path.join("Models", f"audio_NN_New{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}_acc_{acc}")
+    # # model_json = model.to_json()
+    # # with open(f"{path}.json", "w") as json_file:
+    # #     json_file.write(model_json)
+    # # model.save_weights(f"{path}.weights.h5")
+    # #
+    # # if not os.path.exists("weights"):
+    # #     os.makedirs("weights")
+    # # model.save(model_weight_out, overwrite=True, include_optimizer=False)
