@@ -101,11 +101,11 @@ if __name__ == "__main__":
     print("Train Class distribution before balancing:", Counter(np.argmax(y_train, axis=1)))
 
     # Upsampling using SMOTE
-    smote = SMOTE(sampling_strategy={1: 7500, 2: 7000})
+    smote = SMOTE(sampling_strategy={1: 8000, 2: 7500})
     oversampled_features, oversampled_labels = smote.fit_resample(X_train, y_train)
 
     # Downsampling using RandomUnderSampler
-    undersampler = RandomUnderSampler(sampling_strategy={0: 7000})
+    undersampler = RandomUnderSampler(sampling_strategy={0: 7300})
     undersampled_features, undersampled_labels = undersampler.fit_resample(
         oversampled_features, oversampled_labels)
 
@@ -129,17 +129,8 @@ if __name__ == "__main__":
 
     callback = LearningRateScheduler(scheduler)
 
-    os.makedirs("best_models", exist_ok=True)
-    checkpoint_callback = ModelCheckpoint(
-        filepath='best_models/exp_best_model.h5',
-        monitor='val_accuracy',
-        save_best_only=True,
-        mode='max',
-        verbose=1
-    )
-
     model.fit(X_train, y_train, batch_size=32, epochs=10,
-              validation_data=(X_val, y_val), callbacks=[callback, checkpoint_callback])
+              validation_data=(X_val, y_val), callbacks=[callback])
 
     ################# Testing the model #############################
     print("\nTesting the model\n")
@@ -171,16 +162,6 @@ if __name__ == "__main__":
         f"Total Accuracy: {acc}%, Alarm Accuracy: {acc_alarm}%, Others Accuracy: {acc_other}%, Water Accuracy: {acc_water}%")
 
     showResult(result, y_test, class_names)
-
-    print("\n")
-    print(classification_report(
-        np.argmax(y_test, axis=1),
-        np.argmax(result, axis=1),
-        target_names=list(class_names)
-    ))
-
-    model = load_model('best_models/exp_best_model.h5')
-    result = model.predict(X_test)
 
     print("\n")
     print(classification_report(
