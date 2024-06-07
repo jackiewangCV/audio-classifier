@@ -131,8 +131,12 @@ if __name__ == "__main__":
 
     os.makedirs("best_models", exist_ok=True)
     checkpoint_callback = ModelCheckpoint(
-        'best_models/exp_best_model.h5',
-        monitor='val_accuracy', save_best_only=True, mode='max')
+        filepath='best_models/exp_best_model.h5',
+        monitor='val_accuracy',
+        save_best_only=True,
+        mode='max',
+        verbose=1
+    )
 
     model.fit(X_train, y_train, batch_size=32, epochs=10,
               validation_data=(X_val, y_val), callbacks=[callback, checkpoint_callback])
