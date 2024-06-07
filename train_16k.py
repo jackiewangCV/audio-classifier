@@ -101,19 +101,19 @@ if __name__ == "__main__":
     print("Train Class distribution before balancing:", Counter(np.argmax(y_train, axis=1)))
 
     # Upsampling using SMOTE
-    smote = SMOTE(sampling_strategy={1: 9000, 2: 7500})
+    smote = SMOTE(sampling_strategy={1: 9000, 2: 7500, 0: 8000})
     oversampled_features, oversampled_labels = smote.fit_resample(X_train, y_train)
 
-    # Downsampling using RandomUnderSampler
-    undersampler = RandomUnderSampler(sampling_strategy={0: 7300})
-    undersampled_features, undersampled_labels = undersampler.fit_resample(
-        oversampled_features, oversampled_labels)
+    # # Downsampling using RandomUnderSampler
+    # undersampler = RandomUnderSampler(sampling_strategy={0: 7300})
+    # undersampled_features, undersampled_labels = undersampler.fit_resample(
+    #     oversampled_features, oversampled_labels)
 
     print("Train Class distribution after balancing:", Counter(
-        np.argmax(undersampled_labels, axis=1)))
+        np.argmax(oversampled_labels, axis=1)))
 
-    X_train = undersampled_features
-    y_train = undersampled_labels
+    X_train = oversampled_features
+    y_train = oversampled_labels
 
     ###################### Training the model ###########################3
     print("\nTraining the model\n")
