@@ -100,7 +100,7 @@ if __name__ == "__main__":
     print("Train Class distribution before balancing:", Counter(np.argmax(y_train, axis=1)))
 
     # Upsampling using SMOTE
-    smote = SMOTE(sampling_strategy={1: 6000, 2: 6000})
+    smote = SMOTE(sampling_strategy={1: 6500, 2: 6500})
     oversampled_features, oversampled_labels = smote.fit_resample(X_train, y_train)
 
     # Downsampling using RandomUnderSampler
