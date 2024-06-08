@@ -4,8 +4,8 @@ import datetime
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.regularizers import l2
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, BatchNormalization
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Dropout, Activation, BatchNormalization, Add, Input
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -41,27 +41,44 @@ def showResult(result, y_test, class_names):
     print_M(conf_M, class_names)
     print_M_P(conf_M, class_names)
 
+
 def build_improved_model(input_shape, num_labels):
-    model = Sequential()
-    model.add(Dense(512, input_shape=(input_shape,), kernel_regularizer=l2(0.001)))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    inputs = Input(shape=(input_shape,))
 
-    model.add(Dense(256))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    # First layer
+    x = Dense(512, kernel_regularizer=l2(0.001))(inputs)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Dropout(0.5)(x)
 
-    model.add(Dense(128))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    # Second layer
+    x = Dense(256)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Dropout(0.5)(x)
+    shortcut2 = x  # Save for skip connection
 
-    model.add(Dense(num_labels))
-    model.add(Activation('softmax'))
+    # Third layer
+    x = Dense(128)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Dropout(0.5)(x)
 
+    # Projecting shortcut2 to the same shape as x
+    shortcut2 = Dense(128)(shortcut2)
+    shortcut2 = BatchNormalization()(shortcut2)
+
+    # Adding skip connections
+    x = Add()([x, shortcut2])  # Adding projected second layer output
+    x = Activation('relu')(x)
+    x = Dropout(0.5)(x)
+
+    # Final output layer
+    outputs = Dense(num_labels, activation='softmax')(x)
+
+    model = Model(inputs=inputs, outputs=outputs)
     model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
+
     return model
 
 def load_weight(path):
@@ -101,7 +118,7 @@ if __name__ == "__main__":
     print("Train Class distribution before balancing:", Counter(np.argmax(y_train, axis=1)))
 
     # Upsampling using SMOTE
-    smote = SMOTE(sampling_strategy={1: 10000, 2: 8000})
+    smote = SMOTE(sampling_strategy={1: 8500, 2: 7500})
     oversampled_features, oversampled_labels = smote.fit_resample(X_train, y_train)
 
     # Downsampling using RandomUnderSampler
@@ -170,14 +187,14 @@ if __name__ == "__main__":
         target_names=list(class_names)
     ))
 
-    # # if not os.path.exists("Models"):
-    # #     os.makedirs("Models")
-    # # path = os.path.join("Models", f"audio_NN_New{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}_acc_{acc}")
-    # # model_json = model.to_json()
-    # # with open(f"{path}.json", "w") as json_file:
-    # #     json_file.write(model_json)
-    # # model.save_weights(f"{path}.weights.h5")
-    # #
-    # # if not os.path.exists("weights"):
-    # #     os.makedirs("weights")
-    # # model.save(model_weight_out, overwrite=True, include_optimizer=False)
+    if not os.path.exists("Models"):
+        os.makedirs("Models")
+    path = os.path.join("Models", f"audio_NN_New{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}_acc_{acc}")
+    model_json = model.to_json()
+    with open(f"{path}.json", "w") as json_file:
+        json_file.write(model_json)
+    model.save_weights(f"{path}.weights.h5")
+
+    if not os.path.exists("weights"):
+        os.makedirs("weights")
+    model.save(model_weight_out, overwrite=True, include_optimizer=False)
