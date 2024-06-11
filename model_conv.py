@@ -10,10 +10,11 @@ target_length = 3341
 
 def pad_features(features, target_length):
     if len(features) < target_length:
-        padded_features = np.zeros(target_length)
-        padded_features[:len(features)] = features
+        padded_features = np.zeros((target_length, 1))
+        padded_features[:len(features), 0] = features
     else:
         padded_features = features[:target_length]
+        padded_features = padded_features.reshape(-1, 1)  # Ensure it has the shape (timesteps, channels)
     return padded_features
 
 def get_STFT(file, trim_flag=False, same_training=False):
@@ -39,7 +40,7 @@ def get_STFT(file, trim_flag=False, same_training=False):
 
 def create_feature_data(audio_folder, folder_name="features_new", trim_flag=True, same_training=True):
     os.makedirs(folder_name, exist_ok=True)
-    list_data_audio = glob.glob(f"{audio_folder}/**/*.wav", recursive=True)
+    list_data_audio = glob.glob(f"{audio_folder}*.wav", recursive=True)
     step = 100
     for fa in list_data_audio:
         feature = get_STFT(fa, trim_flag=trim_flag, same_training=same_training)
@@ -89,7 +90,6 @@ def compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file
     model_keras = load_model(keras_model_file)
     step = 10
     for i in range(0, feature.shape[0], step):
-
         new_feature = feature[i:i + step]
 
         mfccs = librosa.feature.mfcc(y=new_feature, sr=16000, n_mfcc=13)
@@ -127,7 +127,7 @@ def compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file
         out_label = ""
         if np.argmax(output) == 0:
             out_label = "Alarm"
-        elif np.argmax(output) == 2:
+        elif np.argmax(output) == 1:
             out_label = "Water"
         else:
             out_label = "Other"
@@ -135,15 +135,12 @@ def compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file
 
 
 if __name__ == "__main__":
-    audio_folder = "calibrate_data"
     feature_folder = "features_new"
+    audio_folder = "data/inference"
 
-    if not os.path.exists("input"):
-        os.makedirs("input")
-
-    audio_file = os.path.join("input", "water-audio.wav")
-    keras_model_file = os.path.join("weights", "model_16k_1v1.weights.h5")
-    tflite_model_file = os.path.join("weights", "model_16k_quantized_1v1.tflite")
+    audio_file = os.path.join(audio_folder, "Alarm.wav")
+    keras_model_file = os.path.join("weights", "model_16k_1.3.weights.h5")
+    tflite_model_file = os.path.join("weights", "model_16k_quantized_1.3.tflite")
 
     # if not os.path.exists(tflite_model_file):
     #     pass
@@ -151,21 +148,19 @@ if __name__ == "__main__":
     #     print(f"\nthe same file name already exists: {tflite_model_file}")
     #     sys.exit("error !")
 
-    # same_training = True
-    # trim_flag = True
-    # # Create feature data numpy from audio
-    # """ same_training to make data feature same with training proceed.
-    # audio_folder: should be small engough each type class its number is 10 files"""
-    # print("\n\n\n====================== Create feature data ======================\n\n\n")
-    # create_feature_data(audio_folder, feature_folder, trim_flag=trim_flag, same_training=same_training)
-    #
-    # print("\n\n\n====================== Convert keras to qt tflite model ======================\n\n\n")
-    # """ # Do convert model from keras to quantized tflite """
-    # convert_keras2qttflite(feature_folder, keras_model_file, tflite_model_file)
-    #
-    # print("\n\n\n====================== Compare keras to qt tflite model ======================\n\n\n")
-    # """ # # Compare model with origin """
-    # compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag, same_training=same_training)
+    same_training = True
+    trim_flag = True
+    # Create feature data numpy from audio
+    """ same_training to make data feature same with training proceed.
+    audio_folder: should be small engough each type class its number is 10 files"""
+    print("\n\n\n====================== Create feature data ======================\n\n\n")
+    create_feature_data(audio_folder, feature_folder, trim_flag=trim_flag, same_training=same_training)
 
-    model = load_model(keras_model_file)
-    print(model.input)
+    print("\n\n\n====================== Convert keras to qt tflite model ======================\n\n\n")
+    """ # Do convert model from keras to quantized tflite """
+    convert_keras2qttflite(feature_folder, keras_model_file, tflite_model_file)
+
+    print("\n\n\n====================== Compare keras to qt tflite model ======================\n\n\n")
+    """ # # Compare model with origin """
+    compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag,
+                                 same_training=same_training)
