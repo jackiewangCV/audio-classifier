@@ -42,3 +42,6 @@ Since all the data had been preprocessed, training was smooth like butter. So tr
 - Many experiment were conducted the highest accuracy so far was 80% 81%.
 - Experiment 8 and Experiment 12 turns out to be reliable choice
 
+Weights can be found at this url
+
+https://drive.google.com/drive/folders/1V6ES-tPA48wDQueZg_MxMXmIZMX2CbBY?usp=sharing
