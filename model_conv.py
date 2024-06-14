@@ -45,7 +45,7 @@ def create_feature_data(audio_folder, folder_name="features_new", trim_flag=True
     for fa in list_data_audio:
         feature = get_STFT(fa, trim_flag=trim_flag, same_training=same_training)
         feature = feature.T
-        file_name = fa.split("\\")[-1]
+        file_name = fa.split("/")[-1]
         dir_name = os.path.dirname(fa)
 
         os.makedirs(os.path.join(folder_name, dir_name), exist_ok=True)
@@ -128,19 +128,19 @@ def compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file
         if np.argmax(output) == 0:
             out_label = "Alarm"
         elif np.argmax(output) == 1:
-            out_label = "Water"
-        else:
             out_label = "Other"
+        else:
+            out_label = "Water"
         print(f"output:{i} / uint8 tflite-> {output}: keras-> {pred[0]}, label: {out_label}")
 
 
 if __name__ == "__main__":
     feature_folder = "features_new"
-    audio_folder = "data/inference"
+    audio_folder = "data/test"
 
-    audio_file = os.path.join(audio_folder, "Alarm.wav")
-    keras_model_file = os.path.join("weights", "model_16k_1.3.weights.h5")
-    tflite_model_file = os.path.join("weights", "model_16k_quantized_1.3.tflite")
+    audio_file = os.path.join(audio_folder, "Alarm/d (429).wav")
+    keras_model_file = os.path.join("latest", "model_16k_1.3.weights.h5")
+    tflite_model_file = os.path.join("latest", "model_16k_quantized_1.3.tflite")
 
     # if not os.path.exists(tflite_model_file):
     #     pass
