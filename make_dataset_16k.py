@@ -22,13 +22,13 @@ def get_STFT(file):
     # trimming
     trimmed, index = librosa.effects.trim(reduced_noise, top_db=20, frame_length=512, hop_length=64)
 
-    # extract features
-    stft = np.abs(librosa.stft(trimmed, n_fft=512, hop_length=256, win_length=512))
+    # # extract features
+    # stft = np.abs(librosa.stft(trimmed, n_fft=512, hop_length=256, win_length=512))
 
-    return stft
+    return trimmed
 
-def extract_features(stft):
-    mfccs = librosa.feature.mfcc(y=stft, sr=16000, n_mfcc=13)  # Compute MFCCs
+def extract_features(trimmed):
+    mfccs = librosa.feature.mfcc(y=trimmed, sr=16000, n_mfcc=13)  # Compute MFCCs
     mfccs_mean = np.mean(mfccs.T, axis=0)  # Compute the mean of the MFCCs
     return mfccs_mean.flatten()
 
@@ -50,8 +50,8 @@ def feature_extraction(data_dir, name):
         for audio_file in tqdm(class_audio, total=len(class_audio), desc=f'Extracting {name} {class_dir}'):
             audio_path = os.path.join(data_dir, class_dir, audio_file)
 
-            stft = get_STFT(audio_path)
-            audio_array = extract_features(stft)
+            trimmed = get_STFT(audio_path)
+            audio_array = extract_features(trimmed)
 
             audios.append(audio_array)
             labels.append(i)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     X_train = augment_data(X_train)
 
-    featuresPath = "features_16k/"
+    featuresPath = "features_16k_single_stft/"
 
     os.makedirs(featuresPath, exist_ok=True)
 

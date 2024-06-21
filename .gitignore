@@ -2,9 +2,11 @@
 data
 data
 features_16k
+features_16k_single_stft
 features_new
 Models
 weights
+latest
 best_models
 /desktop.ini
 /*desktop.ini
