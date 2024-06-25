@@ -5,20 +5,26 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Dropout, Activation, BatchNormalization, Add, Input
+from tensorflow.keras.layers import Dense, Dropout, Activation, BatchNormalization, \
+    Add, Input, Conv1D, MaxPooling1D, Flatten, \
+    Lambda
+
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.models import load_model
-from tensorflow.keras.callbacks import ModelCheckpoint
+import tensorflow.keras.backend as K
+
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import RandomUnderSampler
 from collections import Counter
 from sklearn.metrics import classification_report
+
 
 def print_M(conf_M, class_names):
     s = "activity," + ",".join(class_names)
     print(s)
     for i, row in enumerate(conf_M):
         print(class_names[i] + "," + ",".join(map(str, row)))
+
 
 def print_M_P(conf_M, class_names):
     s = "activity," + ",".join(class_names)
@@ -27,6 +33,7 @@ def print_M_P(conf_M, class_names):
         total = sum(row)
         percentages = [str(round(val / total, 2)) if total > 0 else '0' for val in row]
         print(class_names[i] + "," + ",".join(percentages))
+
 
 def showResult(result, y_test, class_names):
     predictions = [np.argmax(y) for y in result]
@@ -42,42 +49,28 @@ def showResult(result, y_test, class_names):
     print_M_P(conf_M, class_names)
 
 
+def load_weight(path):
+    model = load_model(path)
+    print(model.summary())
+    return model
+
+
 def build_improved_model(input_shape, num_labels):
-    inputs = Input(shape=(input_shape,))
+    model = tf.keras.models.Sequential([
+        Input(shape=(input_shape, 1)),
+        Conv1D(32, 6, activation='relu'),
+        MaxPooling1D(pool_size=(3)),
+        Conv1D(16, 3, activation='relu'),
+        MaxPooling1D(pool_size=(3)),
+        Flatten(),
+        Dense(64, activation='relu'),
+        Dense(32, activation='relu'),
+        Dense(18, activation='relu'),
+        Dropout(0.5),
+        Dense(num_labels, activation='softmax')
+    ])
 
-    # First layer
-    x = Dense(512, kernel_regularizer=l2(0.001))(inputs)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = Dropout(0.5)(x)
-
-    # Second layer
-    x = Dense(256)(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = Dropout(0.5)(x)
-    shortcut2 = x  # Save for skip connection
-
-    # Third layer
-    x = Dense(128)(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = Dropout(0.5)(x)
-
-    # Projecting shortcut2 to the same shape as x
-    shortcut2 = Dense(128)(shortcut2)
-    shortcut2 = BatchNormalization()(shortcut2)
-
-    # Adding skip connections
-    x = Add()([x, shortcut2])  # Adding projected second layer output
-    x = Activation('relu')(x)
-    x = Dropout(0.5)(x)
-
-    # Final output layer
-    outputs = Dense(num_labels, activation='softmax')(x)
-
-    model = Model(inputs=inputs, outputs=outputs)
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     return model
 
@@ -87,8 +80,8 @@ def load_weight(path):
     return model
 
 if __name__ == "__main__":
-    
-    model_weight_out = os.path.join('weights', 'model_16k_1v2.weights.h5')
+
+    model_weight_out = os.path.join('weights', 'exp_model_16k_1.3.weights.h5')
 
     # if os.path.exists(model_weight_out):
     #     sys.exit(f"The same file name exists already: {model_weight_out}")
@@ -112,13 +105,12 @@ if __name__ == "__main__":
 
     num_labels = y_train.shape[1]
 
-    ################# Balancing the data ###############################
     print("\nBalancing the data\n")
 
     print("Train Class distribution before balancing:", Counter(np.argmax(y_train, axis=1)))
 
     # Upsampling using SMOTE
-    smote = SMOTE(sampling_strategy={1: 8500, 2: 7500})
+    smote = SMOTE(sampling_strategy={1: 12000, 2: 10000})
     oversampled_features, oversampled_labels = smote.fit_resample(X_train, y_train)
 
     # Downsampling using RandomUnderSampler
@@ -136,7 +128,8 @@ if __name__ == "__main__":
     print("\nTraining the model\n")
 
     model = build_improved_model(X_train.shape[1], num_labels)
-    model.summary()
+
+    # model.summary()
 
     def scheduler(epoch, lr):
         if epoch < 10:
@@ -144,9 +137,10 @@ if __name__ == "__main__":
         else:
             return float(lr * tf.math.exp(-0.1))
 
+
     callback = LearningRateScheduler(scheduler)
 
-    model.fit(X_train, y_train, batch_size=32, epochs=10,
+    model.fit(X_train, y_train, batch_size=5, epochs=10,
               validation_data=(X_val, y_val), callbacks=[callback])
 
     ################# Testing the model #############################
