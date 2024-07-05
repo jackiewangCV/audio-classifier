@@ -43,7 +43,7 @@ print("\nArranging files to data/train\n")
 
 # Define the source and target directories
 source_dir = 'data/raw'
-train_dir = 'data/train'
+train_dir = 'data/balanced/train'
 
 # Define the target subdirectories
 alarm_dir = os.path.join(train_dir, 'Alarm')
@@ -60,7 +60,7 @@ categories = {
     'Alarm': ['Alarm', 'Alarm_clock', 'Bell', 'Busy_signal', 'Car_alarm', 'Cellphone_buzz_vibrating_alert',
               'Fire_alarm', 'Siren', 'smoke_detector_smoke_alarm', 'Telephone_bell_ringing', 'audioset-smoke_alarm'],
     'Water': ['bathtub_filling_or_washing', 'Fill_with_liquid', 'Shower', 'Stream_river', 'toilet_flush',
-              'Water', 'Water_tap_faucet', 'Waterfall'],
+              'Water', 'Water_tap_faucet', 'Waterfall', 'WaterWhiteNoise'],
     'Other': ['dishes_pots_and_pans', 'door', 'microwave_oven']
 }
 
@@ -106,8 +106,8 @@ for class_name, num_files in class_files_count.items():
 # Define the source and target directories
 print('\nCollecting test sample\n')
 
-train_dir = 'data/train'
-test_dir = 'data/test'
+train_dir = 'data/balanced/train'
+test_dir = 'data/balanced/test'
 
 # Define the subdirectories
 categories = ['Alarm', 'Water', 'Other']
@@ -152,11 +152,11 @@ print("Files have been sampled and moved to the test directory successfully.")
 print('\nCollecting inference files\n')
 
 # Define the source directories for each category
-test_dir = 'data/test'
+test_dir = 'data/balanced/test'
 categories = ['Alarm', 'Water', 'Other']
 
 # Define the target inference directory
-inference_dir = 'data/inference'
+inference_dir = 'data/balanced/inference'
 
 # Create the inference directory if it doesn't exist
 os.makedirs(inference_dir, exist_ok=True)
