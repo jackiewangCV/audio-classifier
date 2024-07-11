@@ -27,8 +27,8 @@ def get_STFT(file):
 
     return stft
 
-def extract_features(trimmed):
-    mfccs = librosa.feature.mfcc(y=trimmed, sr=16000, n_mfcc=13)  # Compute MFCCs
+def extract_features(stft):
+    mfccs = librosa.feature.mfcc(y=stft, sr=16000, n_mfcc=13)  # Compute MFCCs
     mfccs_mean = np.mean(mfccs.T, axis=0)  # Compute the mean of the MFCCs
     return mfccs_mean.flatten()
 
@@ -50,8 +50,8 @@ def feature_extraction(data_dir, name):
         for audio_file in tqdm(class_audio, total=len(class_audio), desc=f'Extracting {name} {class_dir}'):
             audio_path = os.path.join(data_dir, class_dir, audio_file)
 
-            trimmed = get_STFT(audio_path)
-            audio_array = extract_features(trimmed)
+            stft = get_STFT(audio_path)
+            audio_array = extract_features(stft)
 
             audios.append(audio_array)
             labels.append(i)

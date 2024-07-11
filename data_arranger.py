@@ -85,7 +85,7 @@ def copy_files_to_category():
 
 # Copy files to the respective directories
 
-# copy_files_to_category()
+copy_files_to_category()
 
 ############################################################
 ########### Displaying Counts for train dir ##############
@@ -141,7 +141,7 @@ def sample_files_to_test(train_dir, test_dir, sample_percentage):
 
 # Call the function to sample and move files
 
-# sample_files_to_test(train_dir, test_dir, sample_percentage=5)
+sample_files_to_test(train_dir, test_dir, sample_percentage=5)
 
 print("Files have been sampled and moved to the test directory successfully.")
 
@@ -182,4 +182,4 @@ def move_files_for_inference(test_dir, inference_dir, categories):
 
 # Call the function to move files for inference
 
-# move_files_for_inference(test_dir, inference_dir, categories)
+move_files_for_inference(test_dir, inference_dir, categories)
