@@ -2,6 +2,10 @@
 
 ## Data 
 
+## Data Collection
+
+Data had been collected from various sources initially but data was imbalanced so we couldn't get good accuracy. There we collected water white noise data to balanced it up to some extent
+
 ### Data Arranger
 
 The data that's been collected was in various directories but we needed it be in Alarm, Water and Other classes.
@@ -18,7 +22,7 @@ https://drive.google.com/open?id=1yNeQqvHEEPm8eN5ullnM34XkU6KoV03M&usp=drive_fs
 
 ### Data Preprocessing
 
-The data is in perfect form but we need to do a lot of work on it to feed it to the model, the make_data_16k.py script has been used where;
+The data is in perfect form but we need to do a lot of work on it to feed it to the model, the data_preprocessor.py script has been used where;
 
 - First we extract features by apply STFT to load in the data and MFCC to extract features
 - Train set is then split into 85% and 15% validation
@@ -32,15 +36,14 @@ https://drive.google.com/drive/folders/1vrY63UxbZ4AEnwVsatmeTlOr5VqoOknZ?usp=sha
 
 ## Training
 
-Since all the data had been preprocessed, training was smooth like butter. So train_16k.py script;
+Since all the data had been preprocessed, training was smooth like butter. So train.py script;
 
 - First loaded the data
 - Data was balanced using SMOTE algorithm
 - Model was trained on 10 epochs with batch size 32 using train set and validation set
 - At least the model had been test on test set and results were computed.
-- Model had been changed to Residual Connection as they've proven good results in proven. It seems more reliable afterwards, what it means is that you can trust that everytime you hit the run button you will get 80% 81% accuracy
-- Many experiment were conducted the highest accuracy so far was 80% 81%.
-- Experiment 8 and Experiment 12 turns out to be reliable choice
+- Model involves two 1D convolution layers followed by one 1D MaxPooling layers. The structure is similary to AlexNet but pin down a little bit and we're using 1D.
+- After training on 30 epochs with batch size 32 we got 89% accuracy. Perfectly predicting water and alarm, suggesting a need to collect more data for others class.
 
 Weights can be found at this url
 
