@@ -16,10 +16,6 @@ For that data_arranger script had been prepared which
 - also splits the data into 95% training and 5% testing
 - lastly takes one sample testing directory of Alarm, Water and Other; as an inference
 
-The resultant dataset can found at this URL:
-
-https://drive.google.com/open?id=1yNeQqvHEEPm8eN5ullnM34XkU6KoV03M&usp=drive_fs
-
 ### Data Preprocessing
 
 The data is in perfect form but we need to do a lot of work on it to feed it to the model, the data_preprocessor.py script has been used where;
@@ -30,9 +26,15 @@ The data is in perfect form but we need to do a lot of work on it to feed it to 
 - Features are standardized through sklearn standard scaler
 - And augment via a custom augmented function.
 
-The resultant preprocessed data can be found at this url:
+### Final dataset can be found here
 
-https://drive.google.com/drive/folders/1vrY63UxbZ4AEnwVsatmeTlOr5VqoOknZ?usp=sharing
+Here the its been divided into three directories, raw, balanced and features.
+
+- **raw** contains the consecutive folders for the audio files of the data
+- **balanced** contains the data in the form train, test and inference, in each of these sub directories we have Alarm, Water and Other
+- **features** contains the features extracted using data preprocessing
+
+https://drive.google.com/open?id=1yNeQqvHEEPm8eN5ullnM34XkU6KoV03M&usp=drive_fs
 
 ## Training
 
@@ -47,4 +49,4 @@ Since all the data had been preprocessed, training was smooth like butter. So tr
 
 Weights can be found at this url
 
-https://drive.google.com/drive/folders/1V6ES-tPA48wDQueZg_MxMXmIZMX2CbBY?usp=sharing
+https://drive.google.com/open?id=1V6ES-tPA48wDQueZg_MxMXmIZMX2CbBY&usp=drive_fs
