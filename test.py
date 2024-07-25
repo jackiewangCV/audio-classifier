@@ -159,3 +159,7 @@ if __name__ == "__main__":
     audio_file = os.path.join("data/balanced/test/Water/water4_347.wav")
 
     compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag, same_training=same_training)
+
+    audio_file = os.path.join("data/balanced/test/Other/noise9_72.wav")
+
+    compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag, same_training=same_training)
