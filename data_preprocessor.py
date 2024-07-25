@@ -50,11 +50,15 @@ def feature_extraction(data_dir, name):
         for audio_file in tqdm(class_audio, total=len(class_audio), desc=f'Extracting {name} {class_dir}'):
             audio_path = os.path.join(data_dir, class_dir, audio_file)
 
-            stft = get_STFT(audio_path)
-            audio_array = extract_features(stft)
+            try:
+                stft = get_STFT(audio_path)
+                audio_array = extract_features(stft)
 
-            audios.append(audio_array)
-            labels.append(i)
+                audios.append(audio_array)
+                labels.append(i)
+
+            except EOFError:
+                print(f"EOFError: {audio_path}")
 
     # Convert lists to numpy arrays
     X = np.array(audios)
@@ -78,31 +82,31 @@ if __name__ == "__main__":
 
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train,
                                                       test_size=0.10, stratify=y_train)
-
+    
     X_test, y_test, _ = feature_extraction('data/balanced/test', 'test')
-
+    
     y_train = to_categorical(y_train)
     y_val = to_categorical(y_val)
     y_test = to_categorical(y_test)
-
+    
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_validation = scaler.transform(X_val)
     X_test = scaler.transform(X_test)
-
+    
     X_train = augment_data(X_train)
-
+    
     featuresPath = "data/features/"
-
+    
     os.makedirs(featuresPath, exist_ok=True)
-
+    
     np.save(os.path.join(featuresPath, 'class_names.npy'), class_names)
-
+    
     np.save(os.path.join(featuresPath, 'X_train.npy'), X_train)
     np.save(os.path.join(featuresPath, 'y_train.npy'), y_train)
-
+    
     np.save(os.path.join(featuresPath, 'X_val.npy'), X_val)
     np.save(os.path.join(featuresPath, 'y_val.npy'), y_val)
-
+    
     np.save(os.path.join(featuresPath, 'X_test.npy'), X_test)
     np.save(os.path.join(featuresPath, 'y_test.npy'), y_test)

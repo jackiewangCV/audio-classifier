@@ -61,7 +61,7 @@ categories = {
               'Fire_alarm', 'Siren', 'smoke_detector_smoke_alarm', 'Telephone_bell_ringing', 'audioset-smoke_alarm'],
     'Water': ['bathtub_filling_or_washing', 'Fill_with_liquid', 'Shower', 'Stream_river', 'toilet_flush',
               'Water', 'Water_tap_faucet', 'Waterfall', 'WaterWhiteNoise'],
-    'Other': ['dishes_pots_and_pans', 'door', 'microwave_oven']
+    'Other': ['dishes_pots_and_pans', 'door', 'microwave_oven', 'OthersRandom']
 }
 
 def copy_files_to_category():

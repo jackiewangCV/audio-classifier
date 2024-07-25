@@ -4,7 +4,7 @@ import datetime
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.regularizers import l2
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, BatchNormalization, \
     Add, Input, Conv1D, MaxPooling1D, Flatten, \
     Lambda
@@ -18,13 +18,15 @@ from imblearn.under_sampling import RandomUnderSampler
 from collections import Counter
 from sklearn.metrics import classification_report
 
+from tqdm.auto import tqdm
 
+
+########## Utilities ###################
 def print_M(conf_M, class_names):
     s = "activity," + ",".join(class_names)
     print(s)
     for i, row in enumerate(conf_M):
         print(class_names[i] + "," + ",".join(map(str, row)))
-
 
 def print_M_P(conf_M, class_names):
     s = "activity," + ",".join(class_names)
@@ -33,7 +35,6 @@ def print_M_P(conf_M, class_names):
         total = sum(row)
         percentages = [str(round(val / total, 2)) if total > 0 else '0' for val in row]
         print(class_names[i] + "," + ",".join(percentages))
-
 
 def showResult(result, y_test, class_names):
     predictions = [np.argmax(y) for y in result]
@@ -48,13 +49,12 @@ def showResult(result, y_test, class_names):
     print_M(conf_M, class_names)
     print_M_P(conf_M, class_names)
 
-
 def load_weight(path):
     model = load_model(path)
     print(model.summary())
     return model
 
-
+############ Model ###############33
 def build_improved_model(input_shape, num_labels):
     model = tf.keras.models.Sequential([
         Input(shape=(input_shape, 1)),
@@ -74,23 +74,15 @@ def build_improved_model(input_shape, num_labels):
 
     return model
 
-def load_weight(path):
-    model = load_model(path)
-    print(model.summary())
-    return model
-
 if __name__ == "__main__":
 
     model_weight_out = os.path.join('weights', 'exp_model_16k_1.3.weights.h5')
-
-    # if os.path.exists(model_weight_out):
-    #     sys.exit(f"The same file name exists already: {model_weight_out}")
 
     ############### Loading the datasets #####################
 
     print('\nLoading the data\n')
 
-    featuresPath = "features_16k/"
+    featuresPath = "data/features/"
 
     class_names = np.load(os.path.join(featuresPath, 'class_names.npy'))
 
@@ -105,18 +97,16 @@ if __name__ == "__main__":
 
     num_labels = y_train.shape[1]
 
+    ############ Balancing the data #################
+
     print("\nBalancing the data\n")
 
     print("Train Class distribution before balancing:", Counter(np.argmax(y_train, axis=1)))
 
-    # Upsampling using SMOTE
-    smote = SMOTE(sampling_strategy={1: 12000, 2: 10000})
-    oversampled_features, oversampled_labels = smote.fit_resample(X_train, y_train)
-
     # Downsampling using RandomUnderSampler
-    undersampler = RandomUnderSampler(sampling_strategy={0: 7300})
+    undersampler = RandomUnderSampler(sampling_strategy={0: 7300, 1: 7300, 2: 7300})
     undersampled_features, undersampled_labels = undersampler.fit_resample(
-        oversampled_features, oversampled_labels)
+        X_train, y_train)
 
     print("Train Class distribution after balancing:", Counter(
         np.argmax(undersampled_labels, axis=1)))
@@ -125,10 +115,10 @@ if __name__ == "__main__":
     y_train = undersampled_labels
 
     ###################### Training the model ###########################3
+    ###################### Training the model ###########################3
     print("\nTraining the model\n")
 
     model = build_improved_model(X_train.shape[1], num_labels)
-
     # model.summary()
 
     def scheduler(epoch, lr):
@@ -137,11 +127,11 @@ if __name__ == "__main__":
         else:
             return float(lr * tf.math.exp(-0.1))
 
-
     callback = LearningRateScheduler(scheduler)
 
-    model.fit(X_train, y_train, batch_size=5, epochs=10,
-              validation_data=(X_val, y_val), callbacks=[callback])
+    model.fit(X_train, y_train, batch_size=32, epochs=30,
+            validation_data=(X_val, y_val),
+            callbacks=[callback])
 
     ################# Testing the model #############################
     print("\nTesting the model\n")
@@ -150,8 +140,8 @@ if __name__ == "__main__":
 
     cnt, cnt_alarm, cnt_other, cnt_water = 0, 0, 0, 0
     alarm_num, other_num, water_num = (sum(np.argmax(y_test, axis=1) == 0),
-                                       sum(np.argmax(y_test, axis=1) == 1),
-                                       sum(np.argmax(y_test, axis=1) == 2))
+                                        sum(np.argmax(y_test, axis=1) == 1),
+                                        sum(np.argmax(y_test, axis=1) == 2))
 
     for i in range(len(y_test)):
         pred = np.argmax(result[i])
@@ -180,6 +170,9 @@ if __name__ == "__main__":
         np.argmax(result, axis=1),
         target_names=list(class_names)
     ))
+
+    ################### Saving the model ####################
+    print('\nSaving the model\n')
 
     if not os.path.exists("Models"):
         os.makedirs("Models")

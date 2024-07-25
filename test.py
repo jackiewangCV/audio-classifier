@@ -126,27 +126,21 @@ def compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file
             output = output_scale * (output.astype(np.float32) - output_zero_point)
         out_label = ""
         if np.argmax(output) == 0:
-            out_label = "Alarm"
-        elif np.argmax(output) == 1:
-            out_label = "Other"
-        else:
             out_label = "Water"
+        elif np.argmax(output) == 1:
+            out_label = "Alarm"
+        else:
+            out_label = "Other"
         print(f"output:{i} / uint8 tflite-> {output}: keras-> {pred[0]}, label: {out_label}")
 
 
 if __name__ == "__main__":
     feature_folder = "features_new"
-    audio_folder = "data/inference"
+    audio_folder = "data/balanced/inference"
 
     audio_file = os.path.join(audio_folder, "Alarm.wav")
-    keras_model_file = os.path.join("weights", "model_16k_1.3.weights.h5")
-    tflite_model_file = os.path.join("weights", "model_16k_quantized_1.3.tflite")
-
-    # if not os.path.exists(tflite_model_file):
-    #     pass
-    # else:
-    #     print(f"\nthe same file name already exists: {tflite_model_file}")
-    #     sys.exit("error !")
+    keras_model_file = os.path.join("weights", "94%_model_16k_1.3.weights.h5")
+    tflite_model_file = os.path.join("weights", "94%_model_16k_1.3.weights.tflite")
 
     same_training = True
     trim_flag = True
@@ -162,5 +156,6 @@ if __name__ == "__main__":
 
     print("\n\n\n====================== Compare keras to qt tflite model ======================\n\n\n")
     """ # # Compare model with origin """
-    compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag,
-                                 same_training=same_training)
+    audio_file = os.path.join("data/balanced/test/Water/water4_347.wav")
+
+    compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag, same_training=same_training)
