@@ -1,5 +1,6 @@
 import librosa
 import os
+import math
 import random
 import numpy as np
 import noisereduce as nr
@@ -28,6 +29,13 @@ def get_STFT(file):
     return stft
 
 def extract_features(stft):
+    # Calculate padding size
+    pad_left = max(0, 256 - stft.shape[1] // 2)
+    pad_right = max(0, 256 - (stft.shape[1] + 1) // 2)
+
+    # Apply padding
+    stft = np.pad(stft, ((0, 0), (pad_left, pad_right)), mode='constant')
+
     mfccs = librosa.feature.mfcc(y=stft, sr=16000, n_mfcc=13)  # Compute MFCCs
     mfccs_mean = np.mean(mfccs.T, axis=0)  # Compute the mean of the MFCCs
     return mfccs_mean.flatten()
