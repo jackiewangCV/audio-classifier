@@ -126,11 +126,11 @@ def compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file
             output = output_scale * (output.astype(np.float32) - output_zero_point)
         out_label = ""
         if np.argmax(output) == 0:
-            out_label = "Water"
-        elif np.argmax(output) == 1:
-            out_label = "Alarm"
-        else:
             out_label = "Other"
+        elif np.argmax(output) == 1:
+            out_label = "Water"
+        else:
+            out_label = "Alarm"
         print(f"output:{i} / uint8 tflite-> {output}: keras-> {pred[0]}, label: {out_label}")
 
 
@@ -139,8 +139,8 @@ if __name__ == "__main__":
     audio_folder = "data/balanced/inference"
 
     audio_file = os.path.join(audio_folder, "Alarm.wav")
-    keras_model_file = os.path.join("weights", "94%_model_16k_1.3.weights.h5")
-    tflite_model_file = os.path.join("weights", "94%_model_16k_1.3.weights.tflite")
+    keras_model_file = os.path.join("weights", "mfcc_512_93%_model_16k_1.3.weights.h5")
+    tflite_model_file = os.path.join("weights", "mfcc_512_93%_model_16k_1.3.weights.tflite")
 
     same_training = True
     trim_flag = True
@@ -156,10 +156,15 @@ if __name__ == "__main__":
 
     print("\n\n\n====================== Compare keras to qt tflite model ======================\n\n\n")
     """ # # Compare model with origin """
-    audio_file = os.path.join("data/balanced/test/Water/water4_347.wav")
 
-    compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag, same_training=same_training)
+    print('Comparision 1 .................')
+    audio_file = os.path.join("data/balanced/test/Alarm/a (207).wav")
 
-    audio_file = os.path.join("data/balanced/test/Other/noise9_72.wav")
+    compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag,
+                                 same_training=same_training)
 
-    compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag, same_training=same_training)
+    print('Comparision 2 ...................')
+    audio_file = os.path.join("data/balanced/test/Water/water10_236.wav")
+
+    compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=trim_flag,
+                                 same_training=same_training)

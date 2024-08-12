@@ -36,7 +36,7 @@ def extract_features(stft):
     # Apply padding
     stft = np.pad(stft, ((0, 0), (pad_left, pad_right)), mode='constant')
 
-    mfccs = librosa.feature.mfcc(y=stft, sr=16000, n_mfcc=13)  # Compute MFCCs
+    mfccs = librosa.feature.mfcc(y=stft, sr=16000, n_mfcc=13, n_fft=512)  # Compute MFCCs
     mfccs_mean = np.mean(mfccs.T, axis=0)  # Compute the mean of the MFCCs
     return mfccs_mean.flatten()
 

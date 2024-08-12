@@ -76,7 +76,7 @@ def build_improved_model(input_shape, num_labels):
 
 if __name__ == "__main__":
 
-    model_weight_out = os.path.join('weights', 'exp_model_16k_1.3.weights.h5')
+    model_weight_out = os.path.join('weights', 'mfcc_512_93%_model_16k_1.3.weights.h5')
 
     ############### Loading the datasets #####################
 
@@ -172,8 +172,6 @@ if __name__ == "__main__":
     ))
 
     ################### Saving the model ####################
-    print('\nSaving the model\n')
-
     if not os.path.exists("Models"):
         os.makedirs("Models")
     path = os.path.join("Models", f"audio_NN_New{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}_acc_{acc}")
