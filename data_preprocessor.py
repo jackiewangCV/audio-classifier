@@ -40,6 +40,7 @@ def extract_features(stft):
     mfccs_mean = np.mean(mfccs.T, axis=0)  # Compute the mean of the MFCCs
     return mfccs_mean.flatten()
 
+
 def feature_extraction(data_dir, name):
     # Load images and labels
     audios = []
