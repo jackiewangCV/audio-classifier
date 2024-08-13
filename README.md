@@ -1,52 +1,56 @@
+
 # Audio Classification
 
-## Data 
+## Overview
 
-## Data Collection
+This project focuses on classifying audio into three categories: Alarm, Water, and Other. We started with unbalanced data but addressed this by collecting more samples, ensuring better accuracy in the final model.
 
-Data had been collected from various sources initially but data was imbalanced so we couldn't get good accuracy. There we collected water white noise data to balanced it up to some extent
+## Data Collection and Organization
 
-### Data Arranger
+Initially, the data we collected was unbalanced, affecting the model's accuracy. To fix this, we gathered additional audio samples of water and other objects to balance the dataset.
 
-The data that's been collected was in various directories but we needed it be in Alarm, Water and Other classes.
+### Data Organization
 
-For that data_arranger script had been prepared which
+The collected audio files were scattered across different folders. To streamline the process, we created a script, `data_arranger.py`, that:
 
-- mixes up the data and provide us the refined data directory containing three classes
-- also splits the data into 95% training and 5% testing
-- lastly takes one sample testing directory of Alarm, Water and Other; as an inference
+- Organizes the audio files into three categories: Alarm, Water, and Other.
+- Splits the data into 95% for training and 5% for testing.
+- Prepares a sample directory with one test file for each category (Alarm, Water, Other) to use for inference.
 
 ### Data Preprocessing
 
-The data is in perfect form but we need to do a lot of work on it to feed it to the model, the data_preprocessor.py script has been used where;
+To make the audio data ready for the model, we used the `data_preprocessor.py` script, which:
 
-- First we extract features by apply STFT to load in the data and MFCC to extract features
-- Train set is then split into 85% and 15% validation
-- After feature extraction the labels are converted into categorical.
-- Features are standardized through sklearn standard scaler
-- And augment via a custom augmented function.
+- Extracts features from the audio using Short-Time Fourier Transform (STFT) and Mel-Frequency Cepstral Coefficients (MFCC).
+- Splits the training data into 85% for training and 15% for validation.
+- Converts the labels into a format suitable for the model.
+- Standardizes the features using a standard scaler from `sklearn`.
+- Applies data augmentation to enhance the dataset.
 
-### Final dataset can be found here
+### Accessing the Data
 
-Here the its been divided into three directories, raw, balanced and features.
+The processed data is organized into three main directories:
 
-- **raw** contains the consecutive folders for the audio files of the data
-- **balanced** contains the data in the form train, test and inference, in each of these sub directories we have Alarm, Water and Other
-- **features** contains the features extracted using data preprocessing
+- **Raw**: Contains the original audio files.
+- **Balanced**: Organized into Train, Test, and Inference sets, with subfolders for Alarm, Water, and Other.
+- **Features**: Contains the extracted features from the preprocessing step.
 
-https://drive.google.com/open?id=1yNeQqvHEEPm8eN5ullnM34XkU6KoV03M&usp=drive_fs
+You can access the data here: [Download Data](https://drive.google.com/open?id=1yNeQqvHEEPm8eN5ullnM34XkU6KoV03M&usp=drive_fs).
 
-## Training
+## Model Training
 
-Since all the data had been preprocessed, training was smooth like butter. So train.py script;
+With the data preprocessed, the training process was straightforward. Using the `train.py` script:
 
-- First loaded the data
-- Data was balanced using SMOTE algorithm
-- Model was trained on 10 epochs with batch size 32 using train set and validation set
-- At least the model had been test on test set and results were computed.
-- Model involves two 1D convolution layers followed by one 1D MaxPooling layers. The structure is similary to AlexNet but pin down a little bit and we're using 1D.
-- After training on 30 epochs with batch size 32 we got 89% accuracy. Perfectly predicting water and alarm, suggesting a need to collect more data for others class.
+- The data was loaded and further balanced using the SMOTE algorithm.
+- We trained the model for 30 epochs with a batch size of 32, using the training and validation sets.
+- The model structure is similar to AlexNet but optimized for 1D data, using two 1D convolutional layers followed by a 1D MaxPooling layer.
+- After training, the model achieved 93% accuracy, successfully classifying all three categories.
 
-Weights can be found at this url
+You can download the trained model weights here: [Download Weights](https://drive.google.com/open?id=1V6ES-tPA48wDQueZg_MxMXmIZMX2CbBY&usp=drive_fs).
 
-https://drive.google.com/open?id=1V6ES-tPA48wDQueZg_MxMXmIZMX2CbBY&usp=drive_fs
+## Model Testing
+
+For deployment, we needed to convert the model to a format suitable for embedded systems. The `test.py` script:
+
+- Converts the trained model to TensorFlow Lite (TFLite) format.
+- Runs inference using the TFLite model and compares its performance with the original Keras model.
