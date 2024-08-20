@@ -38,30 +38,6 @@ def get_STFT(file, trim_flag=False, same_training=False):
     return stft
 
 
-def create_feature_data(audio_folder, folder_name="features_new", trim_flag=True, same_training=True):
-    os.makedirs(folder_name, exist_ok=True)
-    list_data_audio = glob.glob(f"{audio_folder}*.wav", recursive=True)
-    step = 100
-    for fa in list_data_audio:
-        feature = get_STFT(fa, trim_flag=trim_flag, same_training=same_training)
-        feature = feature.T
-        file_name = fa.split("\\")[-1]
-        dir_name = os.path.dirname(fa)
-
-        os.makedirs(os.path.join(folder_name, dir_name), exist_ok=True)
-
-        for i in range(0, feature.shape[0], step):
-            new_feature = feature[i:i + step]
-
-            mfccs = librosa.feature.mfcc(y=new_feature, sr=16000, n_mfcc=13)
-            mfccs = np.mean(mfccs.T, axis=0)
-            mfccs = mfccs.flatten()
-
-            pad = pad_features(mfccs, target_length)
-
-            np.save(f"{folder_name}/{file_name}_{i}.npy", pad)
-
-
 def convert_keras2qttflite(feature_folder, keras_model_file, tflite_model_file):
     def representative_dataset_test():
         list_np = glob.glob(f"{feature_folder}/**/*.npy", recursive=True)
@@ -86,7 +62,6 @@ def convert_keras2qttflite(feature_folder, keras_model_file, tflite_model_file):
 
 def compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file, trim_flag=True, same_training=False):
     feature = get_STFT(audio_file, trim_flag=trim_flag, same_training=same_training)
-    feature = feature.T
     model_keras = load_model(keras_model_file)
     step = 10
     for i in range(0, feature.shape[0], step):
@@ -126,9 +101,9 @@ def compare_model_kerasandtflite(audio_file, keras_model_file, tflite_model_file
             output = output_scale * (output.astype(np.float32) - output_zero_point)
         out_label = ""
         if np.argmax(output) == 0:
-            out_label = "Other"
-        elif np.argmax(output) == 1:
             out_label = "Water"
+        elif np.argmax(output) == 1:
+            out_label = "Other"
         else:
             out_label = "Alarm"
         print(f"output:{i} / uint8 tflite-> {output}: keras-> {pred[0]}, label: {out_label}")
@@ -144,11 +119,7 @@ if __name__ == "__main__":
 
     same_training = True
     trim_flag = True
-    # Create feature data numpy from audio
-    """ same_training to make data feature same with training proceed.
-    audio_folder: should be small engough each type class its number is 10 files"""
-    print("\n\n\n====================== Create feature data ======================\n\n\n")
-    create_feature_data(audio_folder, feature_folder, trim_flag=trim_flag, same_training=same_training)
+
 
     print("\n\n\n====================== Convert keras to qt tflite model ======================\n\n\n")
     """ # Do convert model from keras to quantized tflite """
